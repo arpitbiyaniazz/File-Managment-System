@@ -1,0 +1,88 @@
+# ============================================
+# Multi-Stage Dockerfile for Backend Services
+# ============================================
+# WHY multi-stage?
+# - Stage 1 (build): Install deps + compile TypeScript → large image
+# - Stage 2 (production): Only copy compiled JS + production deps → small image
+# - Result: ~200MB instead of ~800MB
+#
+# WHY node:20-alpine?
+# - Alpine is a minimal Linux distro (~5MB base)
+# - Significantly smaller than debian-based images
+#
+# LAYER CACHING optimization:
+# - COPY package.json BEFORE source code
+# - If source changes but deps don't, Docker reuses cached npm install
+# ============================================
+
+# ---- Stage 1: Build ----
+FROM node:20-alpine AS builder
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@9.1.0 --activate
+
+WORKDIR /app
+
+# Copy workspace config files first (for layer caching)
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
+COPY tsconfig.base.json ./
+
+# Copy package.json files for all packages (workspace resolution)
+COPY packages/shared-types/package.json ./packages/shared-types/
+COPY packages/shared-utils/package.json ./packages/shared-utils/
+COPY packages/shared-config/package.json ./packages/shared-config/
+
+# Copy the target service's package.json
+# SERVICE_NAME is passed as a build arg
+ARG SERVICE_NAME
+COPY apps/${SERVICE_NAME}/package.json ./apps/${SERVICE_NAME}/
+
+# Install ALL dependencies (including devDependencies for building)
+RUN pnpm install --frozen-lockfile || pnpm install
+
+# Copy source code
+COPY packages/ ./packages/
+COPY apps/${SERVICE_NAME}/ ./apps/${SERVICE_NAME}/
+
+# Build shared packages first, then the service
+RUN pnpm --filter @file-manager/shared-types build && \
+    pnpm --filter @file-manager/shared-utils build && \
+    pnpm --filter @file-manager/${SERVICE_NAME} build
+
+# ---- Stage 2: Production ----
+FROM node:20-alpine AS production
+
+RUN corepack enable && corepack prepare pnpm@9.1.0 --activate
+
+WORKDIR /app
+
+# Copy workspace config
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
+
+# Copy built shared packages
+COPY --from=builder /app/packages/shared-types/package.json ./packages/shared-types/
+COPY --from=builder /app/packages/shared-types/dist/ ./packages/shared-types/dist/
+COPY --from=builder /app/packages/shared-utils/package.json ./packages/shared-utils/
+COPY --from=builder /app/packages/shared-utils/dist/ ./packages/shared-utils/dist/
+COPY --from=builder /app/packages/shared-config/ ./packages/shared-config/
+
+# Copy built service
+ARG SERVICE_NAME
+COPY --from=builder /app/apps/${SERVICE_NAME}/package.json ./apps/${SERVICE_NAME}/
+COPY --from=builder /app/apps/${SERVICE_NAME}/dist/ ./apps/${SERVICE_NAME}/dist/
+
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile || pnpm install --prod
+
+# Don't run as root in production
+USER node
+
+# Set environment
+ENV NODE_ENV=production
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT:-3000}/health || exit 1
+
+# Start the service
+CMD ["node", "apps/${SERVICE_NAME}/dist/index.js"]

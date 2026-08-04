@@ -1,0 +1,66 @@
+# ============================================
+# Docker Compose — Development Overrides
+# ============================================
+# Use with: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# WHY a separate dev file?
+# - Volume mounts for hot reload (code changes reflect instantly)
+# - Source code mounted instead of built images
+# - Debug ports exposed
+# - No production builds needed during development
+#
+# For daily development, run services locally with pnpm dev
+# and only use Docker for infrastructure (postgres, redis, minio)
+# ============================================
+
+version: '3.8'
+
+services:
+  # Override app services to mount source code
+  auth-service:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.service
+      target: builder  # Stop at build stage, keep dev deps
+    command: npx tsx watch apps/auth-service/src/index.ts
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./apps/auth-service/src:/app/apps/auth-service/src
+      - ./packages:/app/packages
+
+  file-service:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.service
+      target: builder
+    command: npx tsx watch apps/file-service/src/index.ts
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./apps/file-service/src:/app/apps/file-service/src
+      - ./packages:/app/packages
+
+  metadata-service:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.service
+      target: builder
+    command: npx tsx watch apps/metadata-service/src/index.ts
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./apps/metadata-service/src:/app/apps/metadata-service/src
+      - ./packages:/app/packages
+
+  search-service:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.service
+      target: builder
+    command: npx tsx watch apps/search-service/src/index.ts
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./apps/search-service/src:/app/apps/search-service/src
+      - ./packages:/app/packages

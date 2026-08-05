@@ -1,15 +1,19 @@
 // ============================================
 // Auth Service — Entry Point
 // ============================================
-// This is the skeleton. It boots Express, registers
-// the middleware stack, and listens on port 3001.
+// Boots the Express server, registers auth routes,
+// and starts listening for requests.
 //
-// Business logic (registration, login, JWT) will
-// be added in Module 2.
+// This service handles:
+// - User registration & login
+// - JWT token generation & refresh
+// - Logout with token blacklisting
+// - User profile retrieval
 // ============================================
 
 import { createApp, addErrorHandling, startServer } from '@file-manager/shared-utils';
 import { config } from './config';
+import authRoutes from './routes/auth.routes';
 
 // Create the Express app with standard middleware
 const { app, logger } = createApp({
@@ -17,13 +21,11 @@ const { app, logger } = createApp({
   corsOrigin: config.corsOrigin,
 });
 
-// ---- Service Routes ----
-// Routes will be added here in Module 2:
-// app.use('/api/auth', authRoutes);
+// ---- Register Routes ----
+app.use('/api/auth', authRoutes);
 
 // ---- Finalize ----
-// Error handling MUST be added after all routes
 addErrorHandling(app, logger);
 
-// Start the server with graceful shutdown
+// Start the server
 startServer(app, config.port, logger, config.serviceName);

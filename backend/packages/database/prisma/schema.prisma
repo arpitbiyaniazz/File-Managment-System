@@ -1,0 +1,103 @@
+// ============================================
+// Prisma Schema — File Management System
+// ============================================
+// This is the single source of truth for your database.
+//
+// WHY Prisma?
+// - Type-safe queries — TypeScript types auto-generated from schema
+// - Migrations — version-controlled database changes
+// - Schema-first — define your models, Prisma generates the SQL
+// - Connection pooling — efficient database connection management
+//
+// WHY PostgreSQL?
+// - ACID compliance — data integrity is critical for file metadata
+// - Rich indexing — GIN indexes for full-text search
+// - JSON support — flexible metadata storage
+// - Proven at scale — used by Instagram, Spotify, Discord
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// User Model
+// ============================================
+// Stores user accounts for the file management system.
+//
+// Design decisions:
+// - UUID for id: prevents enumeration attacks (can't guess user IDs)
+// - Separate passwordHash: never exposed in API responses
+// - BigInt for storage: supports up to 9.2 exabytes
+// - storageLimit defaults to 5GB (5,368,709,120 bytes)
+// - isActive flag: soft-disable accounts without deleting data
+// - lastLoginAt: track user activity for analytics
+// ============================================
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  username     String    @unique
+  passwordHash String    @map("password_hash")
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  avatarUrl    String?   @map("avatar_url")
+  role         Role      @default(USER)
+  storageUsed  BigInt    @default(0) @map("storage_used")
+  storageLimit BigInt    @default(5368709120) @map("storage_limit") // 5GB
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  files        File[]
+
+  // Index for faster email lookups during login
+  @@index([email])
+  // Map to snake_case table name (PostgreSQL convention)
+  @@map("users")
+}
+
+// ============================================
+// Role Enum
+// ============================================
+// Three-tier access model:
+// - ADMIN: full access, manage users, system settings
+// - USER: standard access, upload/download/share files
+// - VIEWER: read-only access, can only view shared files
+// ============================================
+
+enum Role {
+  ADMIN
+  USER
+  VIEWER
+}
+
+// ============================================
+// File Model
+// ============================================
+// Stores metadata for files uploaded to MinIO.
+// ============================================
+
+model File {
+  id           String   @id @default(uuid())
+  originalName String   @map("original_name")
+  storageKey   String   @unique @map("storage_key") // The path in MinIO
+  mimeType     String   @map("mime_type")
+  size         BigInt   
+  
+  ownerId      String   @map("owner_id")
+  owner        User     @relation(fields: [ownerId], references: [id])
+  
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([ownerId])
+  @@map("files")
+}

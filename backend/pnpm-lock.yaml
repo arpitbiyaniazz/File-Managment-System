@@ -124,6 +124,9 @@ importers:
 
   apps/metadata-service:
     dependencies:
+      '@file-manager/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@file-manager/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
@@ -133,7 +136,16 @@ importers:
       dotenv:
         specifier: ^16.3.1
         version: 16.6.1
+      express:
+        specifier: ^4.18.2
+        version: 4.22.2
+      zod:
+        specifier: ^3.22.0
+        version: 3.25.76
     devDependencies:
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.25
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.43

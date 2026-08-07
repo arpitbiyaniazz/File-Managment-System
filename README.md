@@ -124,15 +124,14 @@ docker-compose up -d
 ## Module Progress
 
 - [x] Module 1: Project Foundation & Architecture
-- [ ] Module 2: Authentication Service
-- [ ] Module 3: Database & ORM (Prisma)
-- [ ] Module 4: File Service (MinIO)
-- [ ] Module 5: Metadata Service
-- [ ] Module 6: Search Service (Elasticsearch)
-- [ ] Module 7: Message Queue & Workers
-- [ ] Module 8: Caching (Redis)
-- [ ] Module 9: Frontend UI
-- [ ] Module 10: Production Hardening
+- [x] Module 2: Authentication Service
+- [x] Module 3: Database & ORM (Prisma)
+- [x] Module 4: File Service (MinIO) & Metadata Service
+- [ ] Module 5: Search Service (Elasticsearch)
+- [ ] Module 6: Message Queue & Workers
+- [ ] Module 7: Caching (Redis)
+- [ ] Module 8: Frontend UI
+- [ ] Module 9: Production Hardening
 
 ## License
 

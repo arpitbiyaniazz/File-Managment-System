@@ -2,21 +2,21 @@
 // Metadata Service — Entry Point
 // ============================================
 // Manages file metadata, folder hierarchy,
-// ownership, permissions, and file versions.
-// Stores data in PostgreSQL.
-// Business logic will be added in Module 5.
+// ownership, permissions, and sharing.
 // ============================================
 
 import { createApp, addErrorHandling, startServer } from '@file-manager/shared-utils';
 import { config } from './config';
+import metadataRoutes from './routes/metadata.routes';
 
 const { app, logger } = createApp({
   serviceName: config.serviceName,
   corsOrigin: config.corsOrigin,
 });
 
-// Routes will be added in Module 5:
-// app.use('/api/metadata', metadataRoutes);
+// ---- Register Routes ----
+app.use('/api/metadata', metadataRoutes);
 
+// ---- Finalize ----
 addErrorHandling(app, logger);
 startServer(app, config.port, logger, config.serviceName);

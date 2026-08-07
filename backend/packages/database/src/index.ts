@@ -47,4 +47,4 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Re-export Prisma types so services can import from one place
 export { PrismaClient } from '@prisma/client';
-export type { User, Role, File } from '@prisma/client';
+export type { User, Role, File, Folder, Share, SharePermission } from '@prisma/client';

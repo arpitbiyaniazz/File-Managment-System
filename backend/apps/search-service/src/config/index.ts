@@ -1,3 +1,7 @@
+// ============================================
+// Search Service — Configuration
+// ============================================
+
 import dotenv from 'dotenv';
 
 dotenv.config({ path: '../../.env' });
@@ -8,9 +12,13 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   logLevel: process.env.LOG_LEVEL || 'debug',
 
-  // Elasticsearch (will be used in Module 6)
+  jwt: {
+    secret: process.env.JWT_SECRET || 'dev-secret-change-me',
+  },
+
   elasticsearch: {
-    host: process.env.ELASTICSEARCH_HOST || 'http://localhost:9200',
+    node: process.env.ELASTICSEARCH_NODE || 'http://localhost:9200',
+    index: 'search_items',
   },
 
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',

@@ -130,8 +130,8 @@ docker-compose up -d
 - [x] Module 5: Search Service (Elasticsearch)
 - [x] Module 6: Message Queue & Workers
 - [x] Module 7: Caching (Redis)
-- [ ] Module 8: Frontend UI
-- [ ] Module 9: Production Hardening
+- [x] Module 8: Frontend UI
+- [x] Module 9: Production Hardening & Nginx API Gateway
 
 ## License
 

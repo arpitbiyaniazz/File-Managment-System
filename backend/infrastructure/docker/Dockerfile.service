@@ -28,6 +28,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY tsconfig.base.json ./
 
 # Copy package.json files for all packages (workspace resolution)
+COPY packages/database/package.json ./packages/database/
 COPY packages/shared-types/package.json ./packages/shared-types/
 COPY packages/shared-utils/package.json ./packages/shared-utils/
 COPY packages/shared-config/package.json ./packages/shared-config/
@@ -45,7 +46,8 @@ COPY packages/ ./packages/
 COPY apps/${SERVICE_NAME}/ ./apps/${SERVICE_NAME}/
 
 # Build shared packages first, then the service
-RUN pnpm --filter @file-manager/shared-types build && \
+RUN pnpm --filter @file-manager/database postinstall && \
+    pnpm --filter @file-manager/shared-types build && \
     pnpm --filter @file-manager/shared-utils build && \
     pnpm --filter @file-manager/${SERVICE_NAME} build
 

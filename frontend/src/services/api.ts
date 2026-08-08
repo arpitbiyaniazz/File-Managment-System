@@ -1,60 +1,33 @@
 // ============================================
-// API Client — Base Configuration
-// ============================================
-// WHY a centralized API client?
-// - Single place to configure base URL, headers, interceptors
-// - Automatic JWT token attachment
-// - Centralized error handling
-// - Request/response logging in development
-//
-// All API calls go through this client:
-//   import { api } from '@/services/api';
-//   const users = await api.get('/auth/me');
+// API Client — Axios Configuration
 // ============================================
 
 import axios from 'axios';
 
-/**
- * Axios instance configured for the File Manager API.
- *
- * In development, Vite proxy handles routing:
- *   /api/* → http://localhost:80 (Nginx gateway)
- *
- * In production, the API base URL is set via env variable.
- */
-export const api = axios.create({
-  baseURL: '/api',
-  timeout: 30000, // 30 second timeout
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+// Base URLs pointing to microservices (or Nginx API Gateway)
+export const API_URLS = {
+  AUTH: 'http://localhost:3001/api/auth',
+  FILE: 'http://localhost:3002/api/files',
+  METADATA: 'http://localhost:3003/api/metadata',
+  SEARCH: 'http://localhost:3004/api/search',
+};
 
-// ---- Request Interceptor ----
-// Automatically attach JWT token to every request
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+// Create Axios instances
+export const authApi = axios.create({ baseURL: API_URLS.AUTH });
+export const fileApi = axios.create({ baseURL: API_URLS.FILE });
+export const metadataApi = axios.create({ baseURL: API_URLS.METADATA });
+export const searchApi = axios.create({ baseURL: API_URLS.SEARCH });
 
-// ---- Response Interceptor ----
-// Handle common error cases globally
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid — redirect to login
-      localStorage.removeItem('accessToken');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  },
-);
+// Attach Authorization header automatically
+const attachToken = (config: any) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+};
 
-export default api;
+authApi.interceptors.request.use(attachToken);
+fileApi.interceptors.request.use(attachToken);
+metadataApi.interceptors.request.use(attachToken);
+searchApi.interceptors.request.use(attachToken);

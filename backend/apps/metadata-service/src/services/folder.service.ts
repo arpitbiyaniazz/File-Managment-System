@@ -45,6 +45,9 @@ export async function createFolder(userId: string, name: string, parentId?: stri
 
   logger.info('Folder created', { folderId: folder.id, name, userId });
 
+  // Invalidate user folder contents cache
+  delByPattern(`fm:folder:${userId}:*`).catch(err => logger.warn('Failed to invalidate folder cache', { error: err }));
+
   // Publish async event to RabbitMQ
   publishEvent(ROUTING_KEYS.FOLDER_CREATED, {
     folderId: folder.id,
@@ -251,6 +254,9 @@ export async function deleteFolder(folderId: string, userId: string) {
   ]);
 
   logger.info('Folder deleted recursively', { folderId, foldersDeleted: allFolderIds.length });
+
+  // Invalidate folder cache
+  delByPattern(`fm:folder:${userId}:*`).catch(err => logger.warn('Failed to invalidate folder cache', { error: err }));
 
   // Publish async event for each deleted folder
   allFolderIds.forEach((id) => {

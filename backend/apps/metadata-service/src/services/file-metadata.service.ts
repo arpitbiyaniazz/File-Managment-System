@@ -6,7 +6,7 @@
 // ============================================
 
 import { prisma } from '@file-manager/database';
-import { NotFoundError, ForbiddenError, createLogger } from '@file-manager/shared-utils';
+import { NotFoundError, ForbiddenError, createLogger, getCache, setCache, delCache, delByPattern } from '@file-manager/shared-utils';
 
 const logger = createLogger('file-metadata-service');
 
@@ -30,9 +30,19 @@ export async function listFiles(userId: string, folderId?: string | null) {
 }
 
 /**
- * Get a single file's metadata.
+ * Get a single file's metadata with Cache-Aside (TTL 10m).
  */
 export async function getFile(fileId: string, userId: string) {
+  const cacheKey = `fm:file:${fileId}`;
+
+  const cached = await getCache<any>(cacheKey);
+  if (cached) {
+    logger.debug('Cache HIT for file metadata', { cacheKey });
+    return cached;
+  }
+
+  logger.debug('Cache MISS for file metadata (querying DB)', { cacheKey });
+
   const file = await prisma.file.findUnique({
     where: { id: fileId },
     include: { folder: { select: { id: true, name: true } } },
@@ -48,7 +58,10 @@ export async function getFile(fileId: string, userId: string) {
     if (!share) throw new ForbiddenError('You do not have access to this file');
   }
 
-  return serializeFile(file);
+  const result = serializeFile(file);
+  await setCache(cacheKey, result, 600); // 10 minutes TTL
+
+  return result;
 }
 
 /**
@@ -63,6 +76,10 @@ export async function renameFile(fileId: string, userId: string, newName: string
     where: { id: fileId },
     data: { originalName: newName },
   });
+
+  // Invalidate file cache & folder contents cache
+  delCache(`fm:file:${fileId}`).catch(e => logger.warn('Cache del error', { error: e }));
+  delByPattern(`fm:folder:${userId}:*`).catch(e => logger.warn('Cache pattern del error', { error: e }));
 
   logger.info('File renamed', { fileId, newName });
   return serializeFile(updated);
@@ -87,6 +104,10 @@ export async function moveFile(fileId: string, userId: string, folderId: string 
     where: { id: fileId },
     data: { folderId },
   });
+
+  // Invalidate file cache & folder contents cache
+  delCache(`fm:file:${fileId}`).catch(e => logger.warn('Cache del error', { error: e }));
+  delByPattern(`fm:folder:${userId}:*`).catch(e => logger.warn('Cache pattern del error', { error: e }));
 
   logger.info('File moved', { fileId, folderId });
   return serializeFile(updated);

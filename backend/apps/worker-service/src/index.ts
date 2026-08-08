@@ -9,6 +9,7 @@ import { setupTopology } from './services/topology.service';
 import { startSearchConsumer } from './consumers/search.consumer';
 import { startStorageConsumer } from './consumers/storage.consumer';
 import { startAuditConsumer } from './consumers/audit.consumer';
+import { startCacheConsumer } from './consumers/cache.consumer';
 
 const logger = createLogger('worker-service');
 
@@ -18,10 +19,11 @@ async function main() {
 
     const { channel } = await setupTopology();
 
-    // Start all 3 consumers
+    // Start all 4 consumers
     await startSearchConsumer(channel);
     await startStorageConsumer(channel);
     await startAuditConsumer(channel);
+    await startCacheConsumer(channel);
 
     logger.info('✅ Worker Service initialized & consuming queues');
   } catch (error) {

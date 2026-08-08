@@ -28,3 +28,7 @@ export type { AppConfig, AppContext } from './app';
 export { createAuthMiddleware } from './middleware/auth.middleware';
 export type { JwtPayload } from './middleware/auth.middleware';
 export { authorize } from './middleware/rbac.middleware';
+
+export { publishEvent, EXCHANGE_NAME, DLX_EXCHANGE_NAME, ROUTING_KEYS } from './rabbitmq';
+
+export { getCache, setCache, delCache, delByPattern, redis } from './cache';

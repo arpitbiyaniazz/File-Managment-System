@@ -9,7 +9,7 @@
 // ============================================
 
 import { prisma } from '@file-manager/database';
-import { NotFoundError, ForbiddenError, ConflictError, BadRequestError, createLogger, publishEvent, ROUTING_KEYS } from '@file-manager/shared-utils';
+import { NotFoundError, ForbiddenError, ConflictError, BadRequestError, createLogger, publishEvent, ROUTING_KEYS, getCache, setCache, delByPattern } from '@file-manager/shared-utils';
 
 const logger = createLogger('folder-service');
 
@@ -81,14 +81,26 @@ export async function getFolder(folderId: string, userId: string) {
 
 /**
  * List the contents of a folder (subfolders + files).
- * If folderId is null, lists root-level items.
+ * Uses Cache-Aside pattern with 5-minute TTL.
  */
 export async function getFolderContents(userId: string, folderId?: string | null) {
+  const cacheKey = `fm:folder:${userId}:${folderId || 'root'}:contents`;
+
+  // 1. Check Redis Cache First
+  const cached = await getCache<any>(cacheKey);
+  if (cached) {
+    logger.debug('Cache HIT for folder contents', { cacheKey });
+    return cached;
+  }
+
+  logger.debug('Cache MISS for folder contents (querying DB)', { cacheKey });
+
   // If accessing a specific folder, verify access
   if (folderId) {
     await getFolder(folderId, userId); // throws if no access
   }
 
+  // 2. Query PostgreSQL
   const [folders, files] = await Promise.all([
     prisma.folder.findMany({
       where: { ownerId: userId, parentId: folderId || null },
@@ -101,10 +113,15 @@ export async function getFolderContents(userId: string, folderId?: string | null
     }),
   ]);
 
-  return {
+  const result = {
     folders,
     files: files.map(serializeFile),
   };
+
+  // 3. Populate Redis Cache (TTL 300s = 5m)
+  await setCache(cacheKey, result, 300);
+
+  return result;
 }
 
 /**

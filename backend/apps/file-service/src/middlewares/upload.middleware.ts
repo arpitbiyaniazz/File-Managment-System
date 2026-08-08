@@ -35,12 +35,13 @@ class MinioStorageEngine implements multer.StorageEngine {
     // For this learning project, we will use an estimated size or update it after upload.
     
     // To get the exact size, we can let AWS SDK upload the stream, and then fetch the size from MinIO!
-    // Or we can just count it as it flows. Let's count it.
+    const folderId = req.body?.folderId || (req.query?.folderId as string) || null;
     fileService.uploadFile(
       userId,
       file.originalname,
       file.mimetype,
-      file.stream
+      file.stream,
+      folderId
     )
     .then((metadata) => {
       cb(null, {

@@ -9,7 +9,7 @@ import { prisma } from '@file-manager/database';
 import { randomUUID } from 'crypto';
 import path from 'path';
 import { Readable } from 'stream';
-import { NotFoundError, ForbiddenError, createLogger, publishEvent, ROUTING_KEYS } from '@file-manager/shared-utils';
+import { NotFoundError, ForbiddenError, createLogger, publishEvent, ROUTING_KEYS, delByPattern } from '@file-manager/shared-utils';
 import * as minioService from './minio.service';
 
 const logger = createLogger('file-business-service');
@@ -21,18 +21,14 @@ export async function uploadFile(
   userId: string,
   originalName: string,
   mimeType: string,
-  stream: Readable
+  stream: Readable,
+  folderId?: string | null
 ) {
   // 1. Generate a unique storage key (avoids name collisions)
   const ext = path.extname(originalName);
   const storageKey = `${userId}/${randomUUID()}${ext}`;
 
-  // 2. Stream the file directly to MinIO
-  // We do this BEFORE the database insert because if the upload fails,
-  // we don't want a dangling record in the database.
   await minioService.uploadStream(storageKey, stream, mimeType);
-
-  // Fetch actual file size from MinIO
   const s3Meta = await minioService.getFileMetadata(storageKey);
   const actualSize = s3Meta?.ContentLength || 0;
 
@@ -45,6 +41,7 @@ export async function uploadFile(
         mimeType,
         size: BigInt(actualSize),
         ownerId: userId,
+        folderId: folderId || null,
       },
     });
 
@@ -59,6 +56,9 @@ export async function uploadFile(
     });
 
     logger.info('File uploaded successfully', { fileId: fileRecord.id, userId });
+    
+    // Instantly evict Redis folder cache so UI fetches fresh file list immediately
+    await delByPattern(`fm:folder:${userId}:*`).catch(() => {});
     
     // Publish async event to RabbitMQ
     publishEvent(ROUTING_KEYS.FILE_CREATED, {
@@ -150,6 +150,9 @@ export async function deleteFile(fileId: string, userId: string) {
   ]);
 
   logger.info('File deleted successfully', { fileId, userId });
+
+  // Instantly evict Redis folder cache so UI updates immediately
+  await delByPattern(`fm:folder:${userId}:*`).catch(() => {});
 
   // Publish async event to RabbitMQ
   publishEvent(ROUTING_KEYS.FILE_DELETED, {

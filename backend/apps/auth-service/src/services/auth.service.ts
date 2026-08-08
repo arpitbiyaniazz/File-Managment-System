@@ -49,7 +49,9 @@ function getRedis(): Redis {
       host: config.redis.host,
       port: config.redis.port,
       password: config.redis.password || undefined,
-      maxRetriesPerRequest: 3,
+      maxRetriesPerRequest: 1,
+      connectTimeout: 1000,
+      enableOfflineQueue: false,
       lazyConnect: true,
     });
 

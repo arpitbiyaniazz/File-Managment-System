@@ -19,10 +19,12 @@ export const redis = new Redis({
   host: REDIS_HOST,
   port: REDIS_PORT,
   password: REDIS_PASSWORD,
-  maxRetriesPerRequest: 3,
+  maxRetriesPerRequest: 1,
+  connectTimeout: 1000,
+  enableOfflineQueue: false,
   lazyConnect: true,
   retryStrategy(times) {
-    const delay = Math.min(times * 100, 3000);
+    const delay = Math.min(times * 100, 2000);
     return delay;
   },
 });

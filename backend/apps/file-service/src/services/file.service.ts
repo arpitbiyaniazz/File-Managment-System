@@ -9,7 +9,7 @@ import { prisma } from '@file-manager/database';
 import { randomUUID } from 'crypto';
 import path from 'path';
 import { Readable } from 'stream';
-import { NotFoundError, ForbiddenError, createLogger } from '@file-manager/shared-utils';
+import { NotFoundError, ForbiddenError, createLogger, publishEvent, ROUTING_KEYS } from '@file-manager/shared-utils';
 import * as minioService from './minio.service';
 
 const logger = createLogger('file-business-service');
@@ -60,6 +60,17 @@ export async function uploadFile(
 
     logger.info('File uploaded successfully', { fileId: fileRecord.id, userId });
     
+    // Publish async event to RabbitMQ
+    publishEvent(ROUTING_KEYS.FILE_CREATED, {
+      fileId: fileRecord.id,
+      originalName: fileRecord.originalName,
+      storageKey: fileRecord.storageKey,
+      mimeType: fileRecord.mimeType,
+      size: Number(fileRecord.size),
+      ownerId: userId,
+      folderId: fileRecord.folderId,
+    }).catch(err => logger.error('Failed to publish FILE_CREATED event', { error: err }));
+
     return {
       id: fileRecord.id,
       originalName: fileRecord.originalName,
@@ -139,4 +150,11 @@ export async function deleteFile(fileId: string, userId: string) {
   ]);
 
   logger.info('File deleted successfully', { fileId, userId });
+
+  // Publish async event to RabbitMQ
+  publishEvent(ROUTING_KEYS.FILE_DELETED, {
+    fileId,
+    ownerId: userId,
+    size: Number(file.size),
+  }).catch(err => logger.error('Failed to publish FILE_DELETED event', { error: err }));
 }

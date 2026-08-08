@@ -128,7 +128,7 @@ docker-compose up -d
 - [x] Module 3: Database & ORM (Prisma)
 - [x] Module 4: File Service (MinIO) & Metadata Service
 - [x] Module 5: Search Service (Elasticsearch)
-- [ ] Module 6: Message Queue & Workers
+- [x] Module 6: Message Queue & Workers
 - [ ] Module 7: Caching (Redis)
 - [ ] Module 8: Frontend UI
 - [ ] Module 9: Production Hardening

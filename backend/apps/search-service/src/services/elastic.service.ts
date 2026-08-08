@@ -197,20 +197,22 @@ export async function searchDocuments(
               },
             },
           },
-          // Prefix match on keyword subfield
+          // Prefix match on keyword subfield (case-insensitive)
           {
             prefix: {
               'name.keyword': {
-                value: q.toLowerCase(),
+                value: q,
+                case_insensitive: true,
                 boost: 3,
               },
             },
           },
-          // Wildcard match for partial string matching
+          // Wildcard match for partial string matching (case-insensitive)
           {
             wildcard: {
               'name.keyword': {
-                value: `*${q.toLowerCase()}*`,
+                value: `*${q}*`,
+                case_insensitive: true,
                 boost: 1,
               },
             },

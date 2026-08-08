@@ -193,6 +193,40 @@ importers:
         specifier: ^5.3.0
         version: 5.9.3
 
+  apps/worker-service:
+    dependencies:
+      '@elastic/elasticsearch':
+        specifier: ^8.12.0
+        version: 8.19.2
+      '@file-manager/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@file-manager/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
+      '@file-manager/shared-utils':
+        specifier: workspace:*
+        version: link:../../packages/shared-utils
+      amqplib:
+        specifier: ^0.10.3
+        version: 0.10.9
+      dotenv:
+        specifier: ^16.3.1
+        version: 16.6.1
+    devDependencies:
+      '@types/amqplib':
+        specifier: ^0.10.5
+        version: 0.10.8
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
+      tsx:
+        specifier: ^4.7.0
+        version: 4.23.5
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+
   packages/database:
     dependencies:
       '@prisma/client':
@@ -225,6 +259,9 @@ importers:
 
   packages/shared-utils:
     dependencies:
+      amqplib:
+        specifier: ^0.10.3
+        version: 0.10.9
       compression:
         specifier: ^1.7.4
         version: 1.8.1
@@ -237,6 +274,9 @@ importers:
       helmet:
         specifier: ^7.1.0
         version: 7.2.0
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.11.1
       jsonwebtoken:
         specifier: ^9.0.0
         version: 9.0.3
@@ -247,6 +287,9 @@ importers:
         specifier: ^3.11.0
         version: 3.19.0
     devDependencies:
+      '@types/amqplib':
+        specifier: ^0.10.5
+        version: 0.10.8
       '@types/compression':
         specifier: ^1.7.5
         version: 1.8.1
@@ -256,6 +299,9 @@ importers:
       '@types/express':
         specifier: ^4.17.21
         version: 4.17.25
+      '@types/ioredis':
+        specifier: ^5.0.0
+        version: 5.0.0
       '@types/jsonwebtoken':
         specifier: ^9.0.0
         version: 9.0.10
@@ -615,6 +661,9 @@ packages:
     cpu: [arm64]
     os: [win32]
 
+  '@types/amqplib@0.10.8':
+    resolution: {integrity: sha512-vtDp8Pk1wsE/AuQ8/Rgtm6KUZYqcnTgNvEHwzCkX8rL7AGsC6zqAfKAAJhUZXFhM/Pp++tbnUHiam/8vVpPztA==}
+
   '@types/bcrypt@6.0.0':
     resolution: {integrity: sha512-/oJGukuH3D2+D+3H4JWLaAsJ/ji86dhRidzZ/Od7H/i8g+aCmvkeCc6Ni/f9uxGLSQVCRZkX2/lqEFG2BvWtlQ==}
 
@@ -638,6 +687,10 @@ packages:
 
   '@types/http-errors@2.0.5':
     resolution: {integrity: sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==}
+
+  '@types/ioredis@5.0.0':
+    resolution: {integrity: sha512-zJbJ3FVE17CNl5KXzdeSPtdltc4tMT3TzC6fxQS0sQngkbFZ6h+0uTafsRqu+eSLIugf6Yb0Ea0SUuRr42Nk9g==}
+    deprecated: This is a stub types definition. ioredis provides its own type definitions, so you do not need this installed.
 
   '@types/jsonwebtoken@9.0.10':
     resolution: {integrity: sha512-asx5hIG9Qmf/1oStypjanR7iKTv0gXQ1Ov/jfrX6kS/EO0OFni8orbmGCn0672NHR3kXHwpAwR+B368ZGN/2rA==}
@@ -685,6 +738,10 @@ packages:
     resolution: {integrity: sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw==}
     engines: {node: '>= 0.6'}
 
+  amqplib@0.10.9:
+    resolution: {integrity: sha512-jwSftI4QjS3mizvnSnOrPGYiUnm1vI2OP1iXeOUz5pb74Ua0nbf6nPyyTzuiCLEE3fMpaJORXh2K/TQ08H5xGA==}
+    engines: {node: '>=10'}
+
   apache-arrow@21.2.0:
     resolution: {integrity: sha512-Hxe6Agq26gQOM954qpzYSllJBPJl+e16U5CkfuMUhLrNba+5nKkttIVlflaovN6oaTratqMGAO8H5u/aNhmHWQ==}
     hasBin: true
@@ -717,6 +774,9 @@ packages:
 
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
+
+  buffer-more-ints@1.0.0:
+    resolution: {integrity: sha512-EMetuGFz5SLsT0QTnXzINh4Ksr+oo4i+UGTXEshiGCQWnsgSs7ZhJ8fzlwQ+OzEMs0MpDAMr1hxnblp5a4vcHg==}
 
   buffer@5.6.0:
     resolution: {integrity: sha512-/gDYp/UtU0eA1ys8bOs9J6a+E/KWIY+DZ+Q2WESNUA0jFRsJOc0SNUO6xJ5SGA1xueg3NL65W6s+NY5l9cunuw==}
@@ -1119,6 +1179,9 @@ packages:
     resolution: {integrity: sha512-O9gl3zCl5h5blw1KGUzQKhA5oUXSl8rwUIM5o0S3nCXMliSvy5Dzx7/DJcI+SwgICv+IneSZwhBh1oSyEHA71A==}
     engines: {node: '>=0.6'}
 
+  querystringify@2.2.0:
+    resolution: {integrity: sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ==}
+
   range-parser@1.2.1:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
     engines: {node: '>= 0.6'}
@@ -1141,6 +1204,9 @@ packages:
   redis-parser@3.0.0:
     resolution: {integrity: sha512-DJnGAeenTdpMEH6uAJRK/uiyEIH9WVsUmoLwzudwGJUwZPp80PDBWPHXSAGNPwNvIXAbe7MSUB1zQFugFml66A==}
     engines: {node: '>=4'}
+
+  requires-port@1.0.0:
+    resolution: {integrity: sha512-KigOCHcocU3XODJxsu8i/j8T9tzT4adHiecwORRQ0ZZFcp7ahwXuRU1m+yuO90C5ZUyGeGfocHDI14M3L3yDAQ==}
 
   safe-buffer@5.1.2:
     resolution: {integrity: sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g==}
@@ -1261,6 +1327,9 @@ packages:
   unpipe@1.0.0:
     resolution: {integrity: sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==}
     engines: {node: '>= 0.8'}
+
+  url-parse@1.5.10:
+    resolution: {integrity: sha512-WypcfiRhfeUP9vvF0j6rw0J3hrWrw6iZv3+22h6iRMJ/8z1Tj6XfLP4DsUix5MhMPnXpiHDoKyoZ/bdCkwBCiQ==}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -1669,6 +1738,10 @@ snapshots:
   '@turbo/windows-arm64@2.10.8':
     optional: true
 
+  '@types/amqplib@0.10.8':
+    dependencies:
+      '@types/node': 20.19.43
+
   '@types/bcrypt@6.0.0':
     dependencies:
       '@types/node': 20.19.43
@@ -1706,6 +1779,12 @@ snapshots:
       '@types/serve-static': 1.15.10
 
   '@types/http-errors@2.0.5': {}
+
+  '@types/ioredis@5.0.0':
+    dependencies:
+      ioredis: 5.11.1
+    transitivePeerDependencies:
+      - supports-color
 
   '@types/jsonwebtoken@9.0.10':
     dependencies:
@@ -1758,6 +1837,11 @@ snapshots:
       mime-types: 2.1.35
       negotiator: 0.6.3
 
+  amqplib@0.10.9:
+    dependencies:
+      buffer-more-ints: 1.0.0
+      url-parse: 1.5.10
+
   apache-arrow@21.2.0:
     dependencies:
       '@types/node': 25.9.5
@@ -1800,6 +1884,8 @@ snapshots:
   buffer-equal-constant-time@1.0.1: {}
 
   buffer-from@1.1.2: {}
+
+  buffer-more-ints@1.0.0: {}
 
   buffer@5.6.0:
     dependencies:
@@ -2220,6 +2306,8 @@ snapshots:
       es-define-property: 1.0.1
       side-channel: 1.1.1
 
+  querystringify@2.2.0: {}
+
   range-parser@1.2.1: {}
 
   raw-body@2.5.3:
@@ -2250,6 +2338,8 @@ snapshots:
   redis-parser@3.0.0:
     dependencies:
       redis-errors: 1.2.0
+
+  requires-port@1.0.0: {}
 
   safe-buffer@5.1.2: {}
 
@@ -2380,6 +2470,11 @@ snapshots:
   undici@6.28.0: {}
 
   unpipe@1.0.0: {}
+
+  url-parse@1.5.10:
+    dependencies:
+      querystringify: 2.2.0
+      requires-port: 1.0.0
 
   util-deprecate@1.0.2: {}
 

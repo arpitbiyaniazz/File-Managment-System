@@ -9,7 +9,7 @@
 // ============================================
 
 import { prisma } from '@file-manager/database';
-import { NotFoundError, ForbiddenError, ConflictError, BadRequestError, createLogger } from '@file-manager/shared-utils';
+import { NotFoundError, ForbiddenError, ConflictError, BadRequestError, createLogger, publishEvent, ROUTING_KEYS } from '@file-manager/shared-utils';
 
 const logger = createLogger('folder-service');
 
@@ -44,6 +44,15 @@ export async function createFolder(userId: string, name: string, parentId?: stri
   });
 
   logger.info('Folder created', { folderId: folder.id, name, userId });
+
+  // Publish async event to RabbitMQ
+  publishEvent(ROUTING_KEYS.FOLDER_CREATED, {
+    folderId: folder.id,
+    name: folder.name,
+    ownerId: userId,
+    parentId: folder.parentId,
+  }).catch(err => logger.error('Failed to publish FOLDER_CREATED event', { error: err }));
+
   return folder;
 }
 
@@ -225,4 +234,12 @@ export async function deleteFolder(folderId: string, userId: string) {
   ]);
 
   logger.info('Folder deleted recursively', { folderId, foldersDeleted: allFolderIds.length });
+
+  // Publish async event for each deleted folder
+  allFolderIds.forEach((id) => {
+    publishEvent(ROUTING_KEYS.FOLDER_DELETED, {
+      folderId: id,
+      ownerId: userId,
+    }).catch((err) => logger.error('Failed to publish FOLDER_DELETED event', { error: err }));
+  });
 }

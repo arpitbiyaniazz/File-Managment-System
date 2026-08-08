@@ -127,7 +127,7 @@ docker-compose up -d
 - [x] Module 2: Authentication Service
 - [x] Module 3: Database & ORM (Prisma)
 - [x] Module 4: File Service (MinIO) & Metadata Service
-- [ ] Module 5: Search Service (Elasticsearch)
+- [x] Module 5: Search Service (Elasticsearch)
 - [ ] Module 6: Message Queue & Workers
 - [ ] Module 7: Caching (Redis)
 - [ ] Module 8: Frontend UI

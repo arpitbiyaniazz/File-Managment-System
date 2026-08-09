@@ -13,7 +13,6 @@ const router: Router = express.Router();
 
 const authenticate = createAuthMiddleware({
   jwtSecret: config.jwt.secret,
-  isTokenBlacklisted: async () => false,
 });
 
 // All metadata routes require authentication

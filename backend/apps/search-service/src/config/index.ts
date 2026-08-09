@@ -6,14 +6,21 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: '../../.env' });
 
+const nodeEnv = process.env.NODE_ENV || 'development';
+const jwtSecret = process.env.JWT_SECRET || 'dev-secret-change-me';
+
+if (nodeEnv === 'production' && jwtSecret === 'dev-secret-change-me') {
+  throw new Error('FATAL SECURITY ERROR: Default or insecure JWT_SECRET is not allowed in production mode. Set a strong JWT_SECRET in environment variables.');
+}
+
 export const config = {
   serviceName: 'search-service',
   port: parseInt(process.env.SEARCH_SERVICE_PORT || '3004', 10),
-  nodeEnv: process.env.NODE_ENV || 'development',
+  nodeEnv,
   logLevel: process.env.LOG_LEVEL || 'debug',
 
   jwt: {
-    secret: process.env.JWT_SECRET || 'dev-secret-change-me',
+    secret: jwtSecret,
   },
 
   elasticsearch: {

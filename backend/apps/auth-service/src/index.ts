@@ -11,6 +11,7 @@
 // - User profile retrieval
 // ============================================
 
+import 'dotenv/config';
 import { createApp, addErrorHandling, startServer } from '@file-manager/shared-utils';
 import { config } from './config';
 import authRoutes from './routes/auth.routes';

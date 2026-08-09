@@ -6,6 +6,7 @@
 // and writes fail silently so DB operations continue seamlessly.
 // ============================================
 
+import 'dotenv/config';
 import Redis from 'ioredis';
 import { createLogger } from './logger';
 

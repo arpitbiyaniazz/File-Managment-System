@@ -24,6 +24,20 @@ export async function uploadFile(
   stream: Readable,
   folderId?: string | null
 ) {
+  // 0. Quota Check — Pre-upload validation
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { storageUsed: true, storageLimit: true },
+  });
+
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  if (user.storageUsed >= user.storageLimit) {
+    throw new ForbiddenError('Storage quota exceeded. Please delete existing files before uploading new content.');
+  }
+
   // 1. Generate a unique storage key (avoids name collisions)
   const ext = path.extname(originalName);
   const storageKey = `${userId}/${randomUUID()}${ext}`;
@@ -31,6 +45,13 @@ export async function uploadFile(
   await minioService.uploadStream(storageKey, stream, mimeType);
   const s3Meta = await minioService.getFileMetadata(storageKey);
   const actualSize = s3Meta?.ContentLength || 0;
+
+  // Post-upload quota check (exact byte size validation)
+  if (user.storageUsed + BigInt(actualSize) > user.storageLimit) {
+    logger.warn('Storage limit exceeded, rolling back object storage upload', { userId, actualSize });
+    await minioService.deleteFile(storageKey).catch(() => {});
+    throw new ForbiddenError('Upload rejected: file size exceeds remaining storage quota.');
+  }
 
   // 3. Record metadata in PostgreSQL
   try {

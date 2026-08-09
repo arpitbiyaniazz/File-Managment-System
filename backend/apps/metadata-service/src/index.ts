@@ -5,6 +5,7 @@
 // ownership, permissions, and sharing.
 // ============================================
 
+import 'dotenv/config';
 import { createApp, addErrorHandling, startServer } from '@file-manager/shared-utils';
 import { config } from './config';
 import metadataRoutes from './routes/metadata.routes';

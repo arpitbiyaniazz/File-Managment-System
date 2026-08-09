@@ -17,7 +17,6 @@ const router: Router = express.Router();
 // so we'll pass a dummy checker or skip it for now.
 const authenticate = createAuthMiddleware({
   jwtSecret: config.jwt.secret,
-  isTokenBlacklisted: async () => false, 
 });
 
 // All file routes are protected

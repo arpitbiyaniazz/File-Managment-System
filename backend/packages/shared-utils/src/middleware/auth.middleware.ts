@@ -20,6 +20,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { UnauthorizedError } from '../errors';
+import { redis } from '../cache';
 
 export interface JwtPayload {
   userId: string;
@@ -86,12 +87,19 @@ export function createAuthMiddleware(options: AuthMiddlewareOptions) {
         throw new UnauthorizedError('Authentication failed');
       }
 
-      // 3. Check blacklist (if Redis is available)
-      if (options.isTokenBlacklisted) {
-        const blacklisted = await options.isTokenBlacklisted(token);
-        if (blacklisted) {
-          throw new UnauthorizedError('Token has been revoked');
+      // 3. Check blacklist in Redis (automatic for all microservices)
+      const checkBlacklist = options.isTokenBlacklisted || (async (t: string) => {
+        try {
+          const isRevoked = await redis.get(`blacklist:${t}`);
+          return isRevoked !== null;
+        } catch {
+          return false;
         }
+      });
+
+      const blacklisted = await checkBlacklist(token);
+      if (blacklisted) {
+        throw new UnauthorizedError('Token has been revoked');
       }
 
       // 4. Attach user to request

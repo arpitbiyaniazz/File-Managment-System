@@ -5,6 +5,7 @@
 // and handles file uploads/downloads via MinIO.
 // ============================================
 
+import 'dotenv/config';
 import { createApp, addErrorHandling, startServer } from '@file-manager/shared-utils';
 import { config } from './config';
 import fileRoutes from './routes/file.routes';

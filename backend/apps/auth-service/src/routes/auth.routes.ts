@@ -17,7 +17,7 @@ import * as authController from '../controllers/auth.controller';
 import { isTokenBlacklisted } from '../services/auth.service';
 import { config } from '../config';
 
-const router = Router();
+const router: Router = Router();
 
 // Create auth middleware instance for this service
 const authenticate = createAuthMiddleware({

@@ -35,22 +35,25 @@ export async function listFiles(userId: string, folderId?: string | null) {
 export async function getFile(fileId: string, userId: string) {
   const cacheKey = `fm:file:${fileId}`;
 
-  const cached = await getCache<any>(cacheKey);
-  if (cached) {
+  let file = await getCache<any>(cacheKey);
+
+  if (!file) {
+    logger.debug('Cache MISS for file metadata (querying DB)', { cacheKey });
+
+    const rawFile = await prisma.file.findUnique({
+      where: { id: fileId },
+      include: { folder: { select: { id: true, name: true } } },
+    });
+
+    if (!rawFile) throw new NotFoundError('File not found');
+
+    file = serializeFile(rawFile);
+    await setCache(cacheKey, file, 600); // 10 minutes TTL
+  } else {
     logger.debug('Cache HIT for file metadata', { cacheKey });
-    return cached;
   }
 
-  logger.debug('Cache MISS for file metadata (querying DB)', { cacheKey });
-
-  const file = await prisma.file.findUnique({
-    where: { id: fileId },
-    include: { folder: { select: { id: true, name: true } } },
-  });
-
-  if (!file) throw new NotFoundError('File not found');
-
-  // Check ownership or share access
+  // CRITICAL SECURITY FIX: ALWAYS check ownership or share permission, EVEN ON CACHE HIT!
   if (file.ownerId !== userId) {
     const share = await prisma.share.findFirst({
       where: { fileId, sharedWithId: userId },
@@ -58,10 +61,7 @@ export async function getFile(fileId: string, userId: string) {
     if (!share) throw new ForbiddenError('You do not have access to this file');
   }
 
-  const result = serializeFile(file);
-  await setCache(cacheKey, result, 600); // 10 minutes TTL
-
-  return result;
+  return file;
 }
 
 /**
